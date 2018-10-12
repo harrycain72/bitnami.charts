@@ -29,33 +29,57 @@ spec:
       {{- end }}
       containers:
       - name: {{ template "fullname" . }}
-        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         ports:
+        {{- if .Values.containerPort.HTTPS }}
+        - name: https
+          containerPort: {{ .Values.containerPort.HTTPS }}
+          protocol: TCP
+        {{- end }}
+
+        {{- if .Values.containerPort.HTTP }}
         - name: http
-          containerPort: 8080
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 6
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 5
-          timeoutSeconds: 3
-          periodSeconds: 5
+          containerPort: {{ .Values.containerPort.HTTP }}
+          protocol: TCP
+        {{- end }}
+
+
+   
         volumeMounts:
         {{- if .Values.vhost }}
         - name: nginx-vhost
           mountPath: /opt/bitnami/nginx/conf/vhosts
         {{- end }}
+
+        {{- if .Values.externalConfiguration }}
+        - name: nginx-configuration
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        {{- end }}
+
+        {{- if .Values.existingTlsSecretName }}
+        - name: tls-secret
+          mountPath: /etc/ssl/certs/
+        {{- end }}
+
       volumes:
       {{- if .Values.vhost }}
       - name: nginx-vhost
         configMap:
           name: {{ template "fullname" . }}
+      {{- end }}
+
+      {{- if .Values.externalConfiguration }}
+      - name: nginx-configuration
+        configMap:
+          defaultMode: 420
+          name: {{ template "fullname" . }}-conf
+      {{- end }}
+
+       {{- if .Values.existingTlsSecretName }}
+      - name: tls-secret
+        secret:
+          defaultMode: 420
+          secretName: {{ .Values.existingTlsSecretName }}
       {{- end }}

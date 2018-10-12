@@ -1,0 +1,61 @@
+## Bitnami NGINX image version
+## ref: https://hub.docker.com/r/bitnami/nginx/tags/
+##
+
+## Creates a configmap and mounts the configmap into the pod of the deployment.
+## Configmap is used for the nginx/artifactory.conf
+## If you do not want this, comment the line `externalConfiguration`
+externalConfiguration: true
+
+## Creates a volume for the E X I S T I N G  secret and mounts it into the pod of the deployment.
+## TLS secrets are used for the SSL-handshake
+## If you do not want this comment the line "existingTlsSecretName"
+#existingTlsSecretName: tls-cert-artifactory-mykc
+existingTlsSecretName: tls-cert-cvm22438
+
+image:
+  #registry: docker.io
+  #repository: bitnami/nginx
+  #tag: 1.14.0-debian-9
+  repository: nginx
+  tag: 1.15-alpine
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  ##
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  # pullSecrets:
+  #   - myRegistrKeySecretName 
+
+
+
+
+## Kubernetes service configuration
+## Can be NodePort or ClusterIP.
+## If NodePort is selected, make sure to uncomment nodePort.
+## If you don't bother which nodePort to use use 0 else put down your prefered nodePort.
+##
+serviceType: NodePort
+nodePort: 31444
+containerPort:
+  HTTPS: 31444
+  #HTTP:  8080
+
+# vhost: |-
+#   # example PHP-FPM vhost
+#   server {
+#     listen 0.0.0.0:8080;
+#     root /app;
+#     location / {
+#       index index.html index.php;
+#     }
+#     location ~ \.php$ {
+#       fastcgi_pass phpfpm-server:9000;
+#       fastcgi_index index.php;
+#       include fastcgi.conf;
+#     }
+#   }
